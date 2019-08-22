@@ -1,0 +1,84 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "http://biocompute.sbgenomics.com/bco/ff4dec5e-9da3-415c-a3b4-f920c31d3820",
+  "checksum": "c2ec70ba23bd22d7c478b93d21efa937ee4a4100ef73ccfe2f76ce73db82e342",
+  "provenance_domain": {
+    "name": "hello-world",
+    "version": "1.0.0",
+    "review": [],
+    "derived_from": "https://api.sbgenomics.com/v2/apps/soner/bco-demo-2/hello-world/0/raw/",
+    "obsolete_after": "2019-08-22T00:00:00+0000",
+    "embargo": ["2019-08-22T00:00:00+0000", "2019-08-22T00:00:00+0000"],
+    "created": "2019-08-22T00:00:00+0000",
+    "modified": "2019-08-22T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "",
+        "name": "",
+        "description": "",
+        "version": "",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "https://api.sbgenomics.com/v2/apps/soner/bco-demo-2/hello-world/0/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "",
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "",
+        "uri": [
+          {
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
