@@ -1,0 +1,210 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "http://biocompute.sbgenomics.com/bco/6f419a74-0acc-45c9-bac1-b71336be3541",
+  "checksum": "968d747a7a382ba5e43c1ffe612cbf0576453c43a8bdd7bea4991d704282ac4d",
+  "provenance_domain": {
+    "name": "RNA-seq Alignment - STAR",
+    "version": "1.0.0",
+    "review": [],
+    "derived_from": "https://api.sbgenomics.com/v2/apps/soner/soners-demo-project/rna-seq-alignment-star/0/raw/",
+    "obsolete_after": "2019-08-29T00:00:00+0000",
+    "embargo": ["2019-08-29T00:00:00+0000", "2019-08-29T00:00:00+0000"],
+    "created": "2019-08-29T00:00:00+0000",
+    "modified": "2019-08-29T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "Alignment to a reference genome and transcriptome presents the first step of RNA-Seq analysis. This pipeline uses STAR, an ultrafast RNA-seq aligner capable of mapping full length RNA sequences and detecting de novo canonical junctions, non-canonical splices, and chimeric (fusion) transcripts. It is optimized for mammalian sequence reads, but fine tuning of its parameters enables customization to satisfy unique needs.\n\nSTAR accepts one file per sample (or two files for paired-end data).  \nSplice junction annotations can optionally be collected from splice junction databases. Set the \"Overhang length\" parameter to a value larger than zero in order to use splice junction databases. For constant read length, this value should (ideally) be equal to mate length decreased by 1; for long reads with non-constant length, this value should be 100 (pipeline default). \nFastQC Analysis on FASTQ files reveals read length distribution. STAR can detect chimeric transcripts, but parameter \"Min segment length\" in \"Chimeric Alignments\" category must be adjusted to a desired minimum chimeric segment length. Aligned reads are reported in BAM format and can be viewed in a genome browser (such as IGV). A file containing detected splice junctions is also produced.\n\nUnmapped reads are reported in FASTQ format and can be included in an output BAM file. The \"Output unmapped reads\" and \"Write unmapped in SAM\" parameters enable unmapped output type selection.",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "1",
+        "name": "#STAR_Genome_Generate",
+        "description": "STAR Genome Generate is a tool that generates genome index files. One set of files should be generated per each genome/annotation combination. Once produced, these files could be used as long as genome/annotation combination stays the same. Also, STAR Genome Generate which produced these files and STAR aligner using them must be the same toolkit version.",
+        "version": "2.4.2a",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "2",
+        "name": "#STAR",
+        "description": "STAR is an ultrafast universal RNA-seq aligner. It has very high mapping speed, accurate alignment of contiguous and spliced reads, detection of polyA-tails, non-canonical splices and chimeric (fusion) junctions. It works with reads starting from lengths ~15 bases up to ~300 bases. In case of having longer reads, use of STAR Long is recommended.",
+        "version": "2.4.2a",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "3",
+        "name": "#SBG_FASTQ_Quality_Detector",
+        "description": "FASTQ Quality Scale Detector detects which quality encoding scheme was used in your reads and automatically enters the proper value in the \"Quality Scale\" metadata field.",
+        "version": null,
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "4",
+        "name": "#Picard_SortSam",
+        "description": "Picard SortSam sorts the input SAM or BAM. Input and output formats are determined by the file extension.",
+        "version": "1.140",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "https://api.sbgenomics.com/v2/apps/soner/soners-demo-project/rna-seq-alignment-star/0/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "chr20.fa",
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f206692",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Sample2_RNASeq_chr20.pe_2.fastq",
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f20658e",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Sample2_RNASeq_chr20.pe_1.fastq",
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f2065c6",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "chr20_annotations.gtf",
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f2065e3",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "out",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f2065f6",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "out",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f206610",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "out",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f20667c",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "fastq",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f2065d9",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "fastq",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f206597",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "bam",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f20655b",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "bai",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/56f411aae4b02acf3b2dc616",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "bam",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f2065fd",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "tab",
+        "uri": [
+          {
+            "uri": "https://igor.sbgenomics.com/u/soner/soners-demo-project/files/58063598e4b0c58b0f206686",
+            "access_time": "2016-10-18T14:45:49Z"
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
