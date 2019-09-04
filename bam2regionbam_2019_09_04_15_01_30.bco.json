@@ -1,0 +1,93 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "http://biocompute.sbgenomics.com/bco/9e325537-8ba3-4983-a28b-a7c83c891030",
+  "checksum": "5ddf72b58dd167d3639c73cdd3debc61eb815b6f9bb28890ca5ee0bc9d0a8343",
+  "provenance_domain": {
+    "name": "bam2regionbam",
+    "version": "1.0.10",
+    "review": [],
+    "derived_from": "https://api.sbgenomics.com/v2/apps/peter.komar/read-extraction-benchmarking/bam2regionbam/10/raw/",
+    "obsolete_after": "2019-09-04T00:00:00+0000",
+    "embargo": ["2019-09-04T00:00:00+0000", "2019-09-04T00:00:00+0000"],
+    "created": "2019-09-04T00:00:00+0000",
+    "modified": "2019-09-04T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "",
+        "name": "",
+        "description": "",
+        "version": "",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "https://api.sbgenomics.com/v2/apps/peter.komar/read-extraction-benchmarking/bam2regionbam/10/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "HG00731.alt_bwamem_GRCh38DH.20150715.PUR.high_coverage.bam",
+            "uri": "https://igor.sbgenomics.com/u/peter.komar/read-extraction-benchmarking/files/5810d963e4b0a603c4a21eb4",
+            "access_time": "2017-01-16T15:11:49Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "_1_HG00731_part008.bed",
+            "uri": "https://igor.sbgenomics.com/u/peter.komar/read-extraction-benchmarking/files/5810d981e4b0a603c4a21ebc",
+            "access_time": "2017-01-16T15:11:49Z"
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "1",
+        "uri": [
+          {
+            "uri": "1",
+            "access_time": "1"
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
