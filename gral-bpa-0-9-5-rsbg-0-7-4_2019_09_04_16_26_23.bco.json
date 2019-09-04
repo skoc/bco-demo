@@ -1,0 +1,84 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "http://biocompute.sbgenomics.com/bco/7c9ba1f1-45d8-434b-b2c4-ee0ef73944b6",
+  "checksum": "ff233be66cf97f26b6a06fcb7362bd6f05d0a7b96f5eca4c97a27a16f73b49d1",
+  "provenance_domain": {
+    "name": "",
+    "version": "1.0.",
+    "review": [],
+    "derived_from": "",
+    "obsolete_after": "2019-09-04T00:00:00+0000",
+    "embargo": ["2019-09-04T00:00:00+0000", "2019-09-04T00:00:00+0000"],
+    "created": "2019-09-04T00:00:00+0000",
+    "modified": "2019-09-04T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "",
+        "name": "",
+        "description": "",
+        "version": "",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "",
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "",
+        "uri": [
+          {
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
