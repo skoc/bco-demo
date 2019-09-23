@@ -1,0 +1,84 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "http://biocompute.sbgenomics.com/bco/a21ee091-03f2-4663-a82c-07f6c9c52f53",
+  "checksum": "e4d53fd906119e336ad247999b057ce6bba4acf07aeadac824e9366a62c64961",
+  "provenance_domain": {
+    "name": "SBG Compressor",
+    "version": "1.0.0",
+    "review": [],
+    "derived_from": "https://cgc-api.sbgenomics.com/v2/apps/Dennis/bcm-1-6-tb-dataset/sbg-compressor-1-0/0/raw/",
+    "obsolete_after": "2019-09-23T00:00:00+0000",
+    "embargo": ["2019-09-23T00:00:00+0000", "2019-09-23T00:00:00+0000"],
+    "created": "2019-09-23T00:00:00+0000",
+    "modified": "2019-09-23T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "SBG Compressor performs the archiving(and/or compression) of the files provided on the input. The format of the output can be selected. \n\tSupported formats are:\n\t\t1. TAR\n\t\t2. TAR.GZ \n\t\t3. TAR.BZ2\n\t\t4. GZ\n\t\t5. BZ2\n\t\t6. ZIP\nFor formats TAR, TAR.GZ, TAR.BAZ2 and ZIP, a single archive will be created on the output. For formats GZ and BZ2, one archive per file will be created.\nThe tool takes all hard links files from current working dir and compresses them.",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "",
+        "name": "",
+        "description": "",
+        "version": "",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "https://cgc-api.sbgenomics.com/v2/apps/Dennis/bcm-1-6-tb-dataset/sbg-compressor-1-0/0/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "",
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "",
+        "uri": [
+          {
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
