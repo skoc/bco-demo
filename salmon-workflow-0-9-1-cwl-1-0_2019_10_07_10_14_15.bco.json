@@ -1,0 +1,120 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "http://biocompute.sbgenomics.com/bco/d01c34e3-49b4-48de-9a63-74dc73525c28",
+  "checksum": "f5262dfee8bdf633b366b79bf10d9373a6b6f188c29cc3d5e63ce53b0f64c727",
+  "provenance_domain": {
+    "name": "Salmon Workflow CWL 1.0",
+    "version": "1.0.0",
+    "review": [],
+    "derived_from": "https://cgc-api.sbgenomics.com/v2/apps/nanx999/biocompute-demo/salmon-workflow-0-9-1-cwl-1-0/0/raw/",
+    "obsolete_after": "2019-10-07T00:00:00+0000",
+    "embargo": ["2019-10-07T00:00:00+0000", "2019-10-07T00:00:00+0000"],
+    "created": "2019-10-07T00:00:00+0000",
+    "modified": "2019-10-07T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "The **Salmon workflow** infers maximum likelihood estimates of transcript abundances from RNA-Seq data using a process called **Quasi-mapping**.\n\n**Quasi-mapping** is a process of assigning reads to transcripts without doing an exact base-to-base alignment. The **Salmon** tool implements a procedure geared towards knowing the transcript from which a read originates rather than the actual mapping coordinates, since the former is crucial to estimating transcript abundances [1, 2]. \n\nThe result is a software running at speeds orders of magnitude faster than other tools which utilize the full likelihood model while obtaining near-optimal probabilistic RNA-seq quantification results [1, 2, 3]. \n\nThe latest version of Salmon (0.9.x) introduces some novel concepts, like **Rich Factorization Classes**, which further increases the precision of the results, at a very negligible increase in runtime. This version of Salmon also supports quantification from already aligned BAM files, utilizing the full likelihood model (the same one as in RSEM), whereby the results are the same as RSEM but the execution time is much shorter than in RSEM, this time due only to engineering [3].\n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the bottom of this page.*\n\n### Common Use Cases\n\n- The workflow consists of three steps: **Salmon Index**, **Salmon Quant**, and **Salmon Quantmerge**.\n- The main input to the workflow are **FASTQ read files** (single end or paired end). \n- A **Transcriptome FASTA file** (`--transcripts`) also needs to be provided in addition to an optional **Gene map** (`--geneMap`) file (which should be of the same annotations that were used in generating the **Transcriptome FASTA file** - usually a GTF file can be provided here) if gene-level abundance results are desired. \n- An already generated **Salmon index archive** can be provided to the **Salmon Index** tool (**Transcriptome FASTA or Salmon Index Archive** input) in order to skip indexing and save some time. \n- The workflow will generate transcript abundance estimates in plaintext format (**Transcript Abundance Estimates**), and an optional file containing **Gene Abundance Estimates**, if the input **Gene map** (`--gene-map`) file is provided. \n- In addition to the default output (**Quantification file**), additional outputs can be produced if the proper options are turned on for them (e.g. **Equivalent class counts** by setting `--dumpEq`, **Unmapped reads** by setting `--writeUnmappedNames`, **Bootstrap data** by setting `--numBootstraps` or `--numGibbsSamples`, **Mapping info** by setting `--write-mappings`...).\n- A **Transcript Expression Matrix** and a **Gene Expression Matrix** will be generated if more than one sample is provided. \n- The **GC bias correction** option (`--gcBias`) will correct for GC bias and improve quantification accuracy but at the cost of increased runtime (a rough estimate would be a **double** increase in runtime per sample). \n- The workflow is optimized to run in scatter mode. To run it successfully, just supply it with multiple samples (paired end or single end, with properly filled out **Sample ID** and **Paired End** metadata). \n- The use of *data-driven likelihood factorization* is turned on with the **Range factorization bins** parameter (`--rangeFactorizationBins=4`) by default in this workflow, as it can bring an increase in accuracy at a very small increase in runtime [3]. \n- The **Salmon Quant archive** output can be used for downstream differential expression analysis tools, like Sleuth. \n\n### Changes Introduced by Seven Bridges\n\n- All output files will be prefixed by the input sample ID (inferred from the **Sample ID** metadata if existent, of from filename otherwise), instead of having identical names between runs. \n\n### Common Issues and Important Notes\n\n- For paired-end read files, it is important to properly set the **Paired End** metadata field on your read files.\n- The input FASTA file (if provided instead of the already generated Salmon index archive) should be a transcriptome FASTA, not a genomic FASTA.\n- For FASTQ reads in multi-file format (i.e. two FASTQ files for paired-end 1 and two FASTQ files for paired-end2), the proper metadata needs to be set (the following hierarchy is valid: **Sample ID/Library ID/Platform Unit ID/File Segment Number)**.\n- The GTF and FASTA files need to have compatible transcript IDs. \n\n### Performance Benchmarking\n\nThe main advantage of the Salmon software is that it is not computationally challenging, as alignment in the traditional sense is not performed. Therefore, it is optimized to be run in scatter mode, so a c4.8xlarge instance (AWS) is used by default. \nBelow is a table describing the runtimes and task costs for a couple of samples with different file sizes:\n\n| Experiment type |  Input size | Paired-end | # of reads | Read length | Duration |  Cost |  Instance (AWS) |\n|:---------------:|:-----------:|:----------:|:----------:|:-----------:|:--------:|:-----:|:----------:|\n|     RNA-Seq     |  4 x 4.5 GB |     Yes    |     20M     |     101     |   16min   | $0.40| c4.8xlarge |\n|     RNA-Seq     | 2 x 17.4 GB, 2 x 19 GB |     Yes    |     76M & 84M    |     101     |   45min  | $1.20 | c4.8xlarge |\n\n*Cost can be significantly reduced by using **spot instances**. Visit the [Knowledge Center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*\n\n### API Python Implementation\nThe workflow's draft task can also be submitted via the **API**. In order to learn how to get your **Authentication token** and **API endpoint** for corresponding platform visit our [documentation](https://github.com/sbg/sevenbridges-python#authentication-and-configuration).\n\n```python\nfrom sevenbridges import Api\n\n# Enter api credentials\nauthentication_token, api_endpoint = \"enter_your_token\", \"enter_api_endpoint\"\napi = Api(token=authentication_token, url=api_endpoint)\n\n# Get project_id/workflow_id from your address bar. Example: https://igor.sbgenomics.com/u/your_username/project/workflow\nproject_id, workflow_id = \"your_username/project\", \"your_username/project/workflow\"\n\n# Get file names from files in your project. File names below are just as an example.\ninputs = {\n        'reads': list(api.files.query(project=project_id, names=['sample_pe1.fq', 'sample_pe2.fq'])),\n        'gtf': list(api.files.query(project=project_id, names=['gtf_file.gtf'])),\n        'transcriptome_fasta_or_salmon_index_archive': list(api.files.query(project=project_id, names=['transcriptome_fasta_file.fa']))\n        }\n\n# Run the task\ntask = api.tasks.create(name='Salmon 0.9.1 workflow - API Example', project=project_id, app=workflow_id, inputs=inputs, run=True)\n```\nInstructions for installing and configuring the API Python client, are provided on [github](https://github.com/sbg/sevenbridges-python#installation). For more information about using the API Python client, consult [sevenbridges-python documentation](http://sevenbridges-python.readthedocs.io/en/latest/). **More examples** are available [here](https://github.com/sbg/okAPI).\n\nAdditionally, [API R](https://github.com/sbg/sevenbridges-r) and [API Java](https://github.com/sbg/sevenbridges-java) clients are available. To learn more about using these API clients please refer to the [API R client documentation](https://sbg.github.io/sevenbridges-r/), and [API Java client documentation](https://docs.sevenbridges.com/docs/java-library-quickstart).\n\n### References\n\n[1] [Salmon paper](biorxiv.org/content/biorxiv/early/2016/08/30/021592.full.pdf)   \n[2] [Rapmap paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4908361/)   \n[3] [Data-driven likelihood factorization](https://academic.oup.com/bioinformatics/article/33/14/i142/3953977)",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "1",
+        "name": "SBG_Create_Expression_Matrix___Transcripts",
+        "description": "This tool takes multiple abundance estimates files outputted by tools like RSEM, Kallisto or Salmon and creates a single expression counts matrix, based on the input column that the user specifies (the default is 'tpm', but any other string can be input here, like 'fpkm', 'counts' or similar), that can be used for further downstream analysis.\n\nThis tool can also be used to aggregate any kind of results in tab-delimited format and create a matrix like file, it was just originally developed for creating expression matrices. \n\n### Common Issues ###\nNone",
+        "version": "v1.0",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "2",
+        "name": "SBG_Create_Expression_Matrix___Genes",
+        "description": "This tool takes multiple abundance estimates files outputted by tools like RSEM, Kallisto or Salmon and creates a single expression counts matrix, based on the input column that the user specifies (the default is 'tpm', but any other string can be input here, like 'fpkm', 'counts' or similar), that can be used for further downstream analysis.\n\nThis tool can also be used to aggregate any kind of results in tab-delimited format and create a matrix like file, it was just originally developed for creating expression matrices. \n\n### Common Issues ###\nNone",
+        "version": "v1.0",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "3",
+        "name": "SBG_Pair_FASTQs_by_Metadata_1",
+        "description": "Tool accepts list of FASTQ files groups them into separate lists. This grouping is done using metadata values and their hierarchy (Sample ID > Library ID > Platform unit ID > File segment number) which should create unique combinations for each pair of FASTQ files. Important metadata fields are Sample ID, Library ID, Platform unit ID and File segment number. Not all of these four metadata fields are required, but the present set has to be sufficient to create unique combinations for each pair of FASTQ files. Files with no paired end metadata are grouped in the same way as the ones with paired end metadata, generally they should be alone in a separate list. Files with no metadata set will be grouped together. \n\nIf there are more than two files in a group, this might create errors further down most pipelines and the user should check if the metadata fields for those files are set properly.",
+        "version": null,
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "4",
+        "name": "Salmon_Index",
+        "description": "**Salmon Index** tool builds an index from a transcriptome FASTA formatted file of target sequences, necessary for the **Salmon Quant** tool.  \n\n**Quasi-mapping** is a process of assigning reads to transcripts, without doing the exact base-to-base alignment. Seeing that for estimating transcript abundances, the main information needed is which transcript a read originates from and not the actual mapping coordinates, the idea with the **Salmon** tool was to implement a procedure that does exactly that [1, 2]. \n\nThe result is a software running at speeds orders of magnitude faster than other tools which utilize the full likelihood model, while keeping near-optimal probabilistic RNA-seq quantification results [1, 2]. \n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the bottom of the page.*\n\n### Common Use Cases\n\n- A **Transcriptome FASTA file** needs to be provided as an input to the tool. \n\n### Changes Introduced by Seven Bridges\n\n- An already generated **Salmon index archive** can be provided to the **Salmon Index** tool (**Transcriptome FASTA or Salmon Index Archive** input), in order to skip indexing and save a little bit of time if this tool is part of a bigger workflow and there already is an index file that can be provided.\n\n### Common Issues and Important Notes\n\n- The input FASTA file (if provided instead of the already generated salmon index) should be a transcriptome FASTA, not a genomic FASTA.\n\n### Performance Benchmarking\n\nThe **Salmon Index** tool builds the index structure for **Salmon** in a very short time, therefore it is expected that all tasks using this tool should finish in under 5 minutes, costing around $0.05 on the default c4.2xlarge instance (AWS). \n\n*Cost can be significantly reduced by using **spot instances**. Visit the [Knowledge Center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*\n\n\n### References\n\n[1] [Salmon paper](biorxiv.org/content/biorxiv/early/2016/08/30/021592.full.pdf)  \n[2] [Rapmap paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4908361/)",
+        "version": "0.9.1",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "5",
+        "name": "Salmon_Quant___Reads",
+        "description": "**Salmon Quant - Reads** infers transcript abundance estimates from **RNA-seq data**, using a process called **quasi-mapping**. \n\n**Quasi-mapping** is a process of assigning reads to transcripts, without doing the exact base-to-base alignment. Seeing that for estimating transcript abundances, the main information needed is which transcript a read originates from and not the actual mapping coordinates, the idea with the **Salmon** tool was to implement a procedure that does exactly that [1, 2]. \n\nThe result is a software running at speeds orders of magnitude faster than other tools which utilize the full likehood model, while keeping near-optimal probabilistic RNA-seq quantification results [1, 2]. \n\nThe latest version of Salmon (0.9.x) introduces some novel concepts, like **Rich Factorization Classes**, which further increase the precision of the results, at a very negligible increase in runtime. This version of Salmon also supports quantification from already aligned BAM files, utilizing the full likelihood model (the same one as in RSEM), where the results are the same as RSEM, but the execution time is much shorter than in RSEM, this time due to engineering only [3].\n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the bottom of the page.*\n\n### Common Use Cases\n\n- The main input to the tool are **FASTQ read files** (single end or paired end). \n- A **Salmon index archive** (`-i`) also needs to be provided, in addition to an optional **Gene map** (`--geneMap`) file (which should be of the same annotations that were used in generating the **Transcriptome FASTA file**) if gene-level abundance results are desired. \n- The tool will generate transcript abundance estimates in plaintext format, and an optional file containing gene abundance estimates, if the input **Gene map** (`--gene-map`) file is provided. \n- In addition to the default output (**Quantification file**), additional outputs can be produced if the proper options are turned on for them (e.g. **Equivalent class counts** by setting `--dumpEq`, **Unmapped reads** by setting `--writeUnmappedNames`, **Bootstrap data** by setting `--numBootstraps` or `--numGibbsSamples`, **Mapping info** by setting `--write-mappings`...).\n- The **GC bias correction** option (`--gcBias`) will correct for GC bias and improve quantification accuracy, but at the cost of increased runtime (a rough estimate would be a **double** increase in runtime per sample).  \n- The use of *data-driven likelihood factorization* is achieved with the **Range factorization bins** parameter (`--rangeFactorizationBins`) and can be used to bring an increase in accuracy at a very small increase in runtime [3]. \n\n### Changes Introduced by Seven Bridges\n\n- All output files will be prefixed by the input sample ID (inferred from **Sample ID** metadata if existent, or from filename otherwise), instead of having identical names between runs. \n\n### Common Issues and Important Notes\n\n- For paired-end read files, it is important to properly set the **Paired End** metadata field on your read files.\n- For FASTQ reads in multi-file format (i.e. two FASTQ files for paired-end 1 and two FASTQ files for paired-end2), the proper metadata needs to be set (the following hierarchy is valid: **Sample ID/Library ID/Platform Unit ID/File Segment Number)**.\n- The GTF and FASTA files need to have compatible transcript IDs. \n\n### Performance Benchmarking\n\nThe main advantage of the Salmon software is that it is not computationally challenging, as alignment in the traditional sense is not performed. \nBelow is a table describing the runtimes and task costs for a couple of samples with different file sizes:\n\n| Experiment type |  Input size | Paired-end | # of reads | Read length | Duration |  Cost |  Instance (AWS) |\n|:---------------:|:-----------:|:----------:|:----------:|:-----------:|:--------:|:-----:|:----------:|\n|     RNA-Seq     |  2 x 4.5 GB |     Yes    |     20M     |     101     |   5min   | $0.05| c4.2xlarge |\n|     RNA-Seq     | 2 x 17.4 GB |     Yes    |     76M     |     101     |   15min  | $0.15 | c4.2xlarge |\n\n*Cost can be significantly reduced by using **spot instances**. Visit the [Knowledge Center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*\n\n### References\n\n[1] [Salmon paper](biorxiv.org/content/biorxiv/early/2016/08/30/021592.full.pdf)   \n[2] [Rapmap paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4908361/)   \n[3] [Data-driven likelihood factorization](https://academic.oup.com/bioinformatics/article/33/14/i142/3953977)",
+        "version": "0.9.1",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "https://cgc-api.sbgenomics.com/v2/apps/nanx999/biocompute-demo/salmon-workflow-0-9-1-cwl-1-0/0/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "",
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "",
+        "uri": [
+          {
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
