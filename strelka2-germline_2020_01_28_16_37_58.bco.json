@@ -1,0 +1,93 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "https://biocompute.sbgenomics.com/bco/c6c447c9-3451-47cc-9985-91c655915ef5",
+  "checksum": "2b604c26c4b1e81cfe9e952f62ed912039ce139303f48f3c7c56d3582fdc90f1",
+  "provenance_domain": {
+    "name": "isaac-strelka",
+    "version": "1.0.16",
+    "review": [],
+    "derived_from": "https://api.sbgenomics.com/v2/apps/soner/isaac-aligner/strelka2-germline/16/raw/",
+    "obsolete_after": "2020-01-28T00:00:00+0000",
+    "embargo": ["2020-01-28T00:00:00+0000", "2020-01-28T00:00:00+0000"],
+    "created": "2020-01-28T00:00:00+0000",
+    "modified": "2020-01-28T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "1",
+        "name": "#strelka_2_8_4",
+        "description": "",
+        "version": "NA",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "2",
+        "name": "#isaac_align",
+        "description": "",
+        "version": "NA",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "https://api.sbgenomics.com/v2/apps/soner/isaac-aligner/strelka2-germline/16/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "",
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "",
+        "uri": [
+          {
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
