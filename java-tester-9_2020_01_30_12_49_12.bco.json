@@ -1,0 +1,74 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "https://biocompute.sbgenomics.com/bco/6e1dcb18-240d-48b9-83f7-3536dbfb12cf",
+  "checksum": "8640a9dcec2dfbd07e2ec87efc47f6a32b3c81edff9a73cda7dd690dfd38eb76",
+  "provenance_domain": {
+    "name": "perc_correct_strand",
+    "version": "1.0.1",
+    "review": [],
+    "derived_from": "https://cgc-api.sbgenomics.com/v2/apps/michael_lloyd/sample-and-cohort-level-qc/java-tester-9/1/raw/",
+    "obsolete_after": "2020-01-30T00:00:00+0000",
+    "embargo": ["2020-01-30T00:00:00+0000", "2020-01-30T00:00:00+0000"],
+    "created": "2020-01-30T00:00:00+0000",
+    "modified": "2020-01-30T00:00:00+0000",
+    "contributors": [],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": [],
+    "xref": [],
+    "platform": "Seven Bridges Platform",
+    "pipeline_steps": []
+  },
+  "execution_domain": {
+    "script": "https://cgc-api.sbgenomics.com/v2/apps/michael_lloyd/sample-and-cohort-level-qc/java-tester-9/1/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "",
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "",
+        "uri": [
+          {
+            "uri": "",
+            "access_time": ""
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
