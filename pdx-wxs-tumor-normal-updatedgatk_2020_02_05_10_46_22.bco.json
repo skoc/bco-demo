@@ -1,0 +1,1013 @@
+{
+  "bco_spec_version": "https://w3id.org/biocompute/1.3.0/",
+  "bco_id": "https://biocompute.sbgenomics.com/bco/2abeca7f-e96a-49bf-aa33-12600e848bd7",
+  "checksum": "58d65c0430460befac262cb7b5bc6f0260c3fe66359816dac081908d32fa6c5b",
+  "provenance_domain": {
+    "name": "PDX WES Tumor-Normal (Xenome) with Variant Calling, CNV estimation, TMB, MSI, and HRD scores",
+    "version": "1.0.8",
+    "review": [
+      {
+        "status": "in-review",
+        "reviewer_comment": "Under my review",
+        "date": 18297,
+        "reviewer": [
+          {
+            "reviewer_name": "Dennis Dean",
+            "reviewer_affiliation": "PDXNet Coordinator ",
+            "reviewer_email": "dennis.dean@sbgenomics.com",
+            "reviewer_contribution": "",
+            "reviewer_orcid": "0000-0002-7621-9717"
+          }
+        ]
+      }
+    ],
+    "derived_from": "https://cgc-api.sbgenomics.com/v2/apps/pdxnet/pdxnet-datapool/pdx-wxs-tumor-normal-updatedgatk/8/raw/",
+    "obsolete_after": "2020-12-31T00:00:00+0000",
+    "embargo": ["2020-02-05T00:00:00+0000", "2020-04-15T00:00:00+0000"],
+    "created": "2020-02-05T00:00:00+0000",
+    "modified": "2020-02-05T00:00:00+0000",
+    "contributors": [
+      {
+        "name": "Soner Koc",
+        "affiliation": "Data Scientist",
+        "email": "soner.koc@sbgenomics.com",
+        "contribution": "PDXNet Tumor Normal Workflow",
+        "orcid": ""
+      }
+    ],
+    "license": "https://spdx.org/licenses/CC-BY-4.0.html"
+  },
+  "usability_domain": "This Whole Exome Sequencing (WES) tumor-normal workflow first uses the [Broad Institute's](https://software.broadinstitute.org/gatk/best-practices/) best-practices workflow for read alignment, and then analyzes those data in several ways. \n\n1.  Identifies variants from a human exome experiment with GATK-4 [Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.0.5.1/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) for variant calling. \n2. Estimates genome wide copy number with the [Sequenza R package](http://www.cbs.dtu.dk/biotools/sequenza/).\n3. Calculates tumor mutation burden (TMB) score using filtered variants.\n4. Calculates microsatellite instability (MSI) status using [Mantis](https://github.com/OSU-SRLab/MANTIS)\n5. Calculated Homologous recombination deficiency (HRD) score using [scarHRD](https://github.com/sztup/scarHRD) with output from Sequenza\n\nNote: This workflow utilizes the tool `Xenome` to removed mouse-reads from the raw-read data. `Xenome` uses host and graft reference sequences to characterize the set of all possible k-mers according to whether they belong to: only the graft (and not the host), only the host (and not the graft), both references, neither reference, and marginal asignments. This workflow uses those reads classified as 'human-only'.\n\n\n---\n\n### Essential Requirements\n\n  The following metadata fields are required and should be assigned to input read files:\n\n1. **Sample ID**: Any string. As this is the biospecimen identifier, it should be different for PDX (tumor) and normal sample. The workflow will run even if the strings are the same, however, please consider using different identifiers.\n2. **Paired-end**: 1 or 2\n3. **Sample type**: Any string. Please make sure to also provide the chosen tumor and normal sample types to the *SBG Split Pair by Metadata* tool (see below for details), if this is the field you wish to use to separate tumor and normal files. \n\n#### Optional (but recommended) Metadata\n1. **Case ID**. Any string. This allows for the tracking of case's. It is not required for running; however, the workflow will append this metadata field to the front of most outputs if present. \n\nThe workflow will process both uncompressed and compressed FASTQ files.\n\n---\n\n#### The following output files will be generated:\n\n       ---VARIANT OUTPUTS---\n       Tumor FASTQC reports\n       Tumor BAM file\n       Tumor QC reports - integrated and exome\n       Normal FASTQC reports\n       Normal BAM file\n       Normal QC reports - integrated and exome\n       Final annotated VCF and TAB files\n\n       ---CNV SEQUENZA OUTPUTS---\n       Sequenza R data\n\n       Sequenza PDF reports:\n\t   -A plot of all the chromosomes in one image (genome_view),\n       -Multiple plots with one chromosome per image, representing copy-number, B-allele frequency and mutation in parallel (chromosome_view).\n       -Copy number bar plot (CN_bars)\n       -Model fitting plots (CP_contours, model_fit, alternative_fit)\n       \n       Sequenza text reports:\n       -Mutation candidate list with variant allele frequency \n       -Segments list with resulting copy numbers and major and minor alleles.\n       -Segments listed filtered to remove sections of segments with 0 pileup. \n       -Results of the model fitting\n\n       Ensemble annotation of CNV segments (filtered and unfiltered). \n\n       ---TMB---\n      TMB Score File\n\n       ---MSI---\n      MSI Score File\n\n       ---HRD---\n      HRD Score File\n\n---\n\n### Reference Files and Workflow Details\n\nRequired reference input files:\n\n1. **Xenome** is used to classify reads as human or mouse. Xenome indices are built on hg38 and pseudoNOD genome (based on SNP incorporation into mm10 genome from Sanger [ftp://ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/]). The default value of k=25 is used during the indices preparation. \nDefault file input: Xenome_WGS_indices.tar.gz\n\n2. Reference FASTA file and secondary files (.FAI, .DICT). \nDefault file input: Homo_sapiens_assembly38.fasta (Homo_sapiens_assembly38.fasta.fai, Homo_sapiens_assembly38.dict)\nChromosome naming in the default input file: chr1, chr2... chrX, chrY, chrM.\n\n3. BWA indices were prepared using bwakit/0.7.15. GRCh38 files from the Broad GATK resource bundle (hg38_201601) were used. \nDefault file input: BWA_ref_files.tar.gz\n\n4. Additional reference input files (hg38-specific) from the Broad Institute GATK resource bundle (known indels):               \n     Homo_sapiens_assembly38.known_indels.vcf.gz (Homo_sapiens_assembly38.known_indels.vcf.gz.tbi)     \n     Mills_and_1000G_gold_standard.indels.hg38.vcf.gz (Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi)\n     hsa\\_dbSNP\\_v151\\_20170710chr\\_renamed.vcf.gz (hsa\\_dbSNP\\_v151\\_20170710chr\\_renamed.vcf.gz.tbi)     \n\n5. dbSNP v151 (20170710) file:\nDefault file input: hsa_dbSNP_v151_20170710chr_renamed.vcf.gz (hsa_dbSNP_v151_20170710chr_renamed.vcf.gz.tbi)\n\n6. ExAC sites (lifted over to GRCh38 and formatted to match the reference FASTA). Original file was downloaded from Ensembl (http://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype/ExAC.0.3.GRCh38.vcf.gz).\nDefault file input: ExAC.0.3.GRCh38_chr_added_bad_lift_over_removed_reorder_primary_only.vcf.gz (ExAC.0.3.GRCh38_chr_added_bad_lift_over_removed_reorder_primary_only.vcf.gz.tbi)\n\n7. Annotation database file for SnpEff (v4.3):\n     snpEff_v4_3_hg38.zip\n\n8. Annotation database files for SnpSift:\n     a) dbNSFP (by default, the workflow uses dbNSFP v3.2 (academic release): dbNSFP3.2a.txt.gz)\n     b) COSMIC (default file: Sorted_Cosmicv80_Coding_Noncoding.processed.vcf.gz, with .tbi index)\n\n9. Target region files (BED and INTERVALS_LIST format)\nThe BED file should correspond to the data being processed. Chromosome naming in the BED file should match the reference FASTA used to process the data (if using the default input FASTA file, please ensure that chromosome names begin with 'chr'). If a corresponding INTERVALS_LIST file (as used by Picard toolkit) is not available, it can easily be generated using the **GATK BedToIntervalList** tool.\n\n10. Ensemble93 annotation database:  \nDefault file input: ensembl93\\_transcript\\_081618.txt\n\n11. GC content of reference:  \nDefault file input: Homo\\_sapiens\\_assembly38.gc50Base.txt.gz\n\n12. MANTIS BED file:\nThis bedfile defines the locations of microsattelite regions in the genome. See the [Mantis Documentation](https://github.com/OSU-SRLab/MANTIS#microsatellite-loci-bed-file-format) for additional details. \n\n---\n\n### Workflow Steps\n\n#### Step 1: **SBG Split Pair by Metadata**\n\nThe first step separates tumor and normal FASTQ files for downstream processing, based on specified metadata criteria which should be supplied as inputs (normal_metadata and tumor_metadata) in the format metadata_key:value. For example, for files to be classified based on Sample type metadata (sample_type field), with the values \"tumor\" and \"normal\", the inputs should read: sample_type:normal and sample_type:tumor (for normal_metadata and tumor_metadata parameters, respectively).\n\n#### Step 2:  **Tumor/Normal Alignment and Target Coverage** \n\nIn the next step, tumor (PDX model) and normal FASTQ files are QC-checked (**FASTQC**), trimmed (**Trimmomatic**), aligned (**BWA**, alt-aware), sorted (**Picard SortSam**) and prepared for variant calling (**Picard MarkDuplicates**, **GATK BaseRecalibrator**, **GATK ApplyBQSR**). QC is also performed on the processed BAM files using **Exome Coverage QC 1.0** tool and **Picard CalculateHsMetrics**. QC reports are aggregated with the **QC Integrate** script. The two workflows are similar, except for **Xenome** preprocessing of PDX-derived data (tumor workflow) to remove mouse reads. \n\nImportant notes: \n\n1. **BWA** is set to hardcode \"tumor\" and \"normal\" as sample names (SM) in the output BAMs. This can be changed via the read group input parameter. However, please make sure to also adjust **Mutect** parameters tumor and normal sample name, if this is changed.\n\n2. By default, QC checks require that at least 75 % of every target region be covered at 20X. If this requirement is not met, the task will fail (See Target Coverage parameter of the **QC Integrate** tool to adjust this).\n\n#### Step 3: Indexing BAM files (**Samtools Index BAM**)  \n\n\n#### Step 4: Microsattelite instability (MSI) Status Calculation\nBAM files are passed to **Mantis** which calls MSI status. Note: The authors recommend the use of the Step-Wise Difference metric for determining the status of the sample. Any value greater than or equal to the threshold is called unstable.\n\n\n#### Step 5: Variant calling (**GATK 4 Mutect2** and **FilterMutectCalls**)\n\nThe variant calling step has been paralellized by invoking **Mutect2** and **GATK FilterMutectCalls** on smaller intervals in paralel (scatter). The intervals are prepared with the **SBG Prepare Intervals** tool and the output VCFs are collected and merged with the **SnpSift split** tool before annotation. \n\nImportant default parameter: As ExAC 0.3 is used, AF Of Alleles Not In Resource was set to (ExAC 0.3 ~ 60,706Exomes) = 1/(2* 60706)= 0.0000082364  \n\n#### Step 6: Annotation \n\nThe somatic VCF is annotated with SnpEff/SnpSift tools (v4.3). Basic annotation is done with **SnpEff** (using hg38 database). If you wish to use a different database, please make sure to also alter the Assembly input parameter of the SnpEff tool. \n**SnpSift dbNSFP** and **SnpSift annotate** tools are used to add additional annotations from the [dbNSFP](https://sites.google.com/site/jpopgen/dbNSFP) and [COSMIC](https://cancer.sanger.ac.uk/cosmic). Please note that these two annotation sources should be provided as tabix-indexed VCF.GZ files (with their .TBI index present)\n\nFor convenience, the output VCF is reformatted to hold one effect per line (script vcfEffOnePerLine.pl from SnpEff toolkit) and also converted to a tab-separated file (**SnpSift extractFields tool**).\n\n**Please note:** the GT genotype field present in the final VCF does not represent genotype in the traditional sense. Per [GATK documentation](https://software.broadinstitute.org/gatk/documentation/article?id=11127): A somatic caller should detect low fraction alleles, can make no explicit ploidy assumption and omits genotyping in the traditional sense. Mutect2 adheres to all of these criteria. A number of cancer sample characteristics necessitate such caller features. For one, biopsied tumor samples are commonly contaminated with normal cells, and the normal fraction can be much higher than the tumor fraction of a sample. Second, a tumor can be heterogeneous in its mutations. Third, these mutations not uncommonly include aneuploid events that change the copy number of a cell's genome in patchwork fashion. \n\n#### Step 7: Tumor Mutation Burden (TMB) Calculation\nTMB is calucated as the number of coding mutations per Mb of the genome. This is assessed using variants that meet all quality criteria (coverage, AF, mapping quality, strand bias etc.), are somatic and non-polymorphic, and are defined in SnpEff as 'high' or 'moderate' functional impact. As only a porition of the genome was sequenced, genome coverage (Mb) is calculated from the input target coverage BED file. \n\n#### Step 8: Pileup of Tumor and Normal BAM files \nGATK PrintReads is used with a target BED file to extract regions for pileup. **Samtools mpileup** is then used. \n\n#### Step 9: CNV analysis (**Sequenza**)\nPileups are compressed and passed to the Sequenza-Utils script, which prepares inputs for the Sequenza R package, which is subsequently run. \n\n#### Step 10: Annotation and Segment Filtering (**perl script**)\nAnnotation of segments identified by sequenza is done using an ensemble database. Both complete and filtered segments are annotated and returned as output. Filtered files have segments in which >=50% of the segment has zero read coverage removed.\n\n#### Step 11: Homologous recombination deficiency (HRD) score calculation\nSequenza segment files are used as input to **scarHRD**, which calculates HRD score. The threshold for HRD-sum is defined as 55, which had 62 % specificity and 87% sensitivity in predicting the BRCA1/2 deficiency status, as [determined by the authors of the tool](https://static-content.springer.com/esm/art%3A10.1038%2Fs41523-018-0066-6/MediaObjects/41523_2018_66_MOESM1_ESM.pdf).",
+  "extension_domain": {
+    "fhir_extension": {
+      "fhir_endpoint": "",
+      "fhir_version": "",
+      "fhir_resources": {}
+    },
+    "scm_extension": {
+      "scm_repository": "",
+      "scm_type": "git",
+      "scm_commit": "",
+      "scm_path": "",
+      "scm_preview": ""
+    }
+  },
+  "description_domain": {
+    "keywords": ["PDXNet", "Tumor-Normal", "GATK"],
+    "xref": [],
+    "platform": "Cancer Genomics Platform",
+    "pipeline_steps": [
+      {
+        "step_number": "1",
+        "name": "#SBG_Prepare_Intervals",
+        "description": "Depending on selected Split Mode value, output files are generated in accordance with description below:\n\n1. File per interval - The tool creates one interval file per line of the input BED(FAI) file.\nEach interval file contains a single line (one of the lines of BED(FAI) input file).\n\n2. File per chr with alt contig in a single file - For each contig(chromosome) a single file\nis created containing all the intervals corresponding to it .\nAll the intervals (lines) other than (chr1, chr2 ... chrY or 1, 2 ... Y) are saved as\n(\"others.bed\").\n\n3. Output original BED - BED file is required for execution of this mode. If mode 3 is applied input is passed to the output.\n\n4. File per interval with alt contig in a single file - For each chromosome a single file is created for each interval.\nAll the intervals (lines) other than (chr1, chr2 ... chrY or 1, 2 ... Y) are saved as\n(\"others.bed\").\n\n##### Common issues: \nDo not use option 1 (File per interval) with exome BED or a BED with a lot of GL contigs, as it will create a large number of files.",
+        "version": "1.0",
+        "prerequisite": [],
+        "input_list": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e2/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d7/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d8/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8041b1e4b065d300b60587/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8041b1e4b065d300b605da/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240da/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d6/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e5/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d9/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240de/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d94d68ce4b065d31b52e19e/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d94e2dce4b011b585c37719/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240dd/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240db/",
+            "access_time": "2020-02-05"
+          }
+        ],
+        "output_list": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8999ae4b0eeec706f3f76/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8c9e0e4b0bf4ae3077f25/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8ca06e4b0bf4ae3077f2c/",
+            "access_time": "2020-02-05"
+          }
+        ]
+      },
+      {
+        "step_number": "2",
+        "name": "#SnpEff",
+        "description": "**SnpEff** is a variant annotation and effect prediction​ tool, which annotates and predicts the effects of variants on genes, such as amino acid changes [1].\n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the end of the page.*\n\n### Common Use Cases\n\nTypical usage assumes predicted variants (SNPs, insertions, deletions, and MNPs) as input, usually in variant call format (VCF). **SnpEff** analyzes and annotates input variants and calculates the effects they produce on known genes [1]. The output file can be in several file formats, most common being VCF.\n\n**SnpEff** requires an annotation database to run. Official SnpEff annotation databases can be downloaded from [here](https://sourceforge.net/projects/snpeff/files/databases/v4_3/); however, human databases are also hosted on Seven Bridges, in Public Reference Files section (files snpEff_v4_3_GRCh38.86.zip and\tsnpEff_v4_3_GRCh37.75.zip) and can be [imported](https://docs.sevenbridges.com/docs/copy-files-using-the-visual-interface).\n\n### Changes Introduced by Seven Bridges\n\n* Input VCF file (**Input variants file**) is required (as opposed to default input being STDIN).\n* Parameter **Java memory requirement [Gb]** which controls the amount of RAM available to **SnpEff** was included in the wrapper.\n* The following parameters have been excluded from the wrapper:  \n    * `-download`  - The tool is expected to use data from the provided database archive.\n    * `-fileList` - Processing multiple files can be achieved by using batch tasks or scatter mode in workflows.\n    * `-dataDir <path>`  - In the wrapper, data directory is always the same and corresponds to the location of the prepared **SnpEff** database.\n    * `-download`  - Supplying a database archive as an input is required. Downloading missing data for a genome from command line is not supported.\n    * `-help`, `-quiet`, `-verbose`, `-debug` and `-version` - These options are not usually included in Seven Bridges wrappers.\n\n### Common Issues and Important Notes\n\n* Required inputs are **Input variants file** (a VCF or VCF.GZ file to be annotated), **SnpEff database file** (SnpEff database ZIP archive matching the major version of SnpEff used [2], which is 4.3 for this wrapper; e.g. snpEff_v4_3_GRCh38.86.zip or snpEff_v4_3_GRCh37.75.zip from Public Reference Files section), and **Assembly (genome version)**, which is a string representing genome version/assembly (e.g., GRCh38.86, GRCh37.75, hg19), matching the SnpEff database used (GRCh38.86 and GRCh37.75 should be used for the files in the Public Reference Files section).\n* As **SnpEff** is a java tool, it may be occasionally necessary to increase the amount of allocated RAM (default value: 8192 MB), using the **Java memory requirement [Gb]** parameter.\n* A number of **SnpEff** command line options are designed in mutually exclusive pairs (for example `-noStats` and `-stats` or `-lof` and `-noLof`) with some redundancy. These options should not be used together, to avoid task failure.\n* Multithreading parameter **Use multiple threads (implies '-noStats')** (`-t`) will disable statistics. \n* If using VCFs with mitochondrial DNA marked as chrM with GRCh38 database, chromosome not found error can be addressed by renaming chrM to chrMT in the input VCF files, for example using sed: `sed \"s/^chrM/chrMT/g\" input.vcf > input_renamed.vcf`\n* Disabling statistics using **Do not create stats (summary) file** (`-noStats`) will in general speed-up execution.\n\n### Performance Benchmarking\n\nAnnotating NA12878 genome (GRCh38, ~220 Mb as VCF.GZ) with default annotation parameters, 1 CPU, and 8192 MB RAM took 25 minutes with a cost of $0.17 using on-demand default instance.\nBy default, **SnpEff** is allocated 8192 MB of memory. Allocating less memory is not recommended when working with whole genome VCF files.\n\n*Cost can be significantly reduced by **spot instance** usage. Visit [knowledge center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*            \n\n### References\n\n[1] [SnpEff documentation](http://snpeff.sourceforge.net/SnpEff_manual.html)\n\n[2] [Official SnpEff 4.3 databases download location](https://sourceforge.net/projects/snpeff/files/databases/v4_3/)",
+        "version": "4.3k",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8c9e0e4b0bf4ae3077f27/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8c9e0e4b0bf4ae3077f27/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8999ae4b0eeec706f3f77/",
+            "access_time": "2020-02-05"
+          }
+        ]
+      },
+      {
+        "step_number": "3",
+        "name": "#SnpSift_Annotate",
+        "description": "**SnpSift Annotate** uses fields from another VCF file (such as [dbSNP](https://www.ncbi.nlm.nih.gov/projects/SNP/snp_summary.cgi), [1000 genomes](http://www.internationalgenome.org/data), [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/), or [ExAC](http://exac.broadinstitute.org/downloads)) to annotate input VCF files [1].\n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the end of the page.*\n\n### Common Use Cases\n\n**SnpSift Annotate** is typically used to annotate VCF ID and INFO fields from a \"database\" VCF file, such as dbSNP.\n\n### Changes Introduced by Seven Bridges\n\n* VCF file used as the annotation database (**Database for annotation**) should be compressed and tabix-indexed (to prepare the file, please use **Tabix Bgzip** and **Tabix Index** tools which can be found under Public Apps gallery).\n\n### Common Issues and Important Notes\n\n* Inputs **VCF file that will be annotated** and **Database for annotation** are required.\n* Note that **Database for annotation** has to be a compressed and tabix-indexed VCF file.\n* By default **SnpSift Annotate** adds **all** database INFO fields.\nYou can use the **Annotate using a list of INFO fields** (`-info`) parameter if you want to select only a subset of fields from the database VCF file and **Only annotate ID field** (`-id`) parameter if you only want to annotate using ID field (no INFO fields will be added) [1].\n* Parameters **VCF database is sorted and uncompressed** (`-sorted`) and **Max block size** (`-maxBlockSize <int>`) should be used together and applied only if the annotation database VCF file is uncompressed.\n\n### Performance Benchmarking\n\nAdding dbSNP (v150) annotations (all fields) to SnpEff-annotated NA12878 genome (GRCh38 ~3 GB as VCF) with 15 GB RAM took 2 h 23 minutes (price: $0.95 using on-demand default instance)\n\n*Cost can be significantly reduced by **spot instance** usage. Visit [knowledge center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*            \n\n### References\n\n[1] [SnpSift Annotate documentation](http://snpeff.sourceforge.net/SnpSift.html#annotate)",
+        "version": "4.3k",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8cd0ce4b0eeec706f455b/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8d346e4b0bf4ae3078629/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8cb88e4b0bf4ae3077f4c/",
+            "access_time": "2020-02-05"
+          }
+        ]
+      },
+      {
+        "step_number": "4",
+        "name": "#SnpSift_dbNSFP",
+        "description": "**SnpSift dbNSFP** allows annotation with [dbNSFP](https://sites.google.com/site/jpopgen/dbNSFP) [1], an integrated database of functional predictions from multiple algorithms (SIFT, Polyphen2, LRT and MutationTaster, PhyloP and GERP++, etc.) [2].\n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the end of the page.*\n\n### Common Use Cases\n\nAdding **dbNSFP** annotations to VCF files.\n\n### Changes Introduced by Seven Bridges\n\n* To adapt the tool to newer versions of **dbNSFP** (currently 3.5), which have changed some of the fields (column headers) available for annotation, default list of annotation fields used by the tool has been somewhat updated to exclude fields no longer found in the database. Currently used default annotation fields list consists of the following fields:   \n  \n  `Interpro_domain,SIFT_pred, LRT_pred,MutationTaster_pred, GERP++_NR,GERP++_RS, phastCons100way_vertebrate, MutationAssessor_pred, FATHMM_pred, PROVEAN_pred, MetaSVM_pred, 1000Gp3_AC, 1000Gp3_AF, 1000Gp3_AFR_AC, 1000Gp3_AFR_AF, 1000Gp3_EUR_AC, 1000Gp3_EUR_AF, 1000Gp3_AMR_AC, 1000Gp3_AMR_AF, 1000Gp3_EAS_AC, 1000Gp3_EAS_AF, 1000Gp3_SAS_AC, 1000Gp3_SAS_AF, ESP6500_AA_AC, ESP6500_AA_AF, ESP6500_EA_AC, ESP6500_EA_AF, ExAC_AC, ExAC_AF, ExAC_Adj_AC, ExAC_Adj_AF, ExAC_AFR_AC, ExAC_AFR_AF, ExAC_AMR_AC, ExAC_AMR_AF, ExAC_EAS_AC, ExAC_EAS_AF, ExAC_FIN_AC, ExAC_FIN_AF, ExAC_NFE_AC, ExAC_NFE_AF, ExAC_SAS_AC, ExAC_SAS_AF`.\n\nWhen using dbNSFP 2.x files, the above list is modified to exclude `ESP6500_AA_AC,ESP6500_EA_AC` and replace 1000 genomes phase 3 fields with 1000 genomes phase 1 allele frequency fields found in dbNSFP 2.9.x files.\n\n### Common Issues and Important Notes\n\n* Please note that **dbNSFP** database file used for annotation (input **Database for annotation**) should be preprocessed with bgzip and tabix before use. **dbNSFP** database files hosted on the Seven Bridges platform in the Public Reference Files section (dbNSFP_3.3c.gz and dbNSFP2.9.3.txt.gz) and older versions of the database available from SnpSift website links [2] have already been preprocessed. If you wish to preprocess your database files locally, this is one possible way (assumes a unix-based workstation) [3]:\n\n    `unzip dbNSFPv3.x.zip`\n\n    `head -n1 dbNSFP3.x_variant.chr1 ` > ` h`\n\n    `cat dbNSFP3.x_variant.chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c ` > ` dbNSFP_3.x.gz`\n\n    `tabix -s 1 -b 2 -e 2 dbNSFP_3.x.gz`\n\n* Please make sure that the **dbNSFP** version used matches the genome assembly version of your data (3.x for GRCh38 and 2.x for GRCh37).\n* Seven Bridges hosts **dbNSFP** files available for commercial use (dbNSFP_3.3c.gz and dbNSFP2.9.3.txt.gz), however please note that additional annotations are available to researchers in academic versions of **dbNSFP** database available on the **dbNSFP** website [1].\n\n### Performance Benchmarking\n\nAnnotating NA12878 genome (GRCh38, ~3 GB as VCF.GZ) with default **dbNSFP** (v3.5c) annotation fields and 8 GB RAM  took 42 minutes on the default instance (price: $0.28 using on-demand instance).\n\n*Cost can be significantly reduced by **spot instance** usage. Visit [knowledge center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*            \n\n\n### References\n\n[1] [dbNSFP website](https://sites.google.com/site/jpopgen/dbNSFP)\n\n[2] [SnpSift dbNSFP documentation](http://snpeff.sourceforge.net/SnpSift.html#dbNSFP)\n\n[3] [Ensembl VEP dbNSFP plugin documentation](https://github.com/Ensembl/VEP_plugins/blob/release/90/dbNSFP.pm)",
+        "version": "4.3k",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8d292e4b0bf4ae30785b5/",
+            "access_time": "2020-02-05"
+          },
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5db8d1bce4b0eeec706f4b3a/",
+            "access_time": "2020-02-05"
+          }
+        ]
+      },
+      {
+        "step_number": "5",
+        "name": "#SBG_Split_Pair_by_Metadata",
+        "description": "This tool is a \"junction\" tool sorting files from a single array input into multiple arrays. It shouldn't be used as a single tool.\nBecause of the general purpose the input files do not have any set requirements and they depend on the use case and pipeline. The splitting criteria is given in the \"key:value\" form, and each output contains all the files that have metadat[key]==value.\nBuilt-in metadat fields are all written in lower case with underscores instead of spaces (Sample type is \"sample_type\"), while custom metadata fields can be written with any desired string.",
+        "version": "NA",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "6",
+        "name": "#SAMtools_Index_BAM_1",
+        "description": "SAMtools Index BAM indexes sorted alignments for fast random access. Index file <aln.bam>.bai is created.",
+        "version": "v0.1.19",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "7",
+        "name": "#SAMtools_Index_BAM",
+        "description": "SAMtools Index BAM indexes sorted alignments for fast random access. Index file <aln.bam>.bai is created.",
+        "version": "v0.1.19",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "8",
+        "name": "#vcfEffOnePerLine_pl",
+        "description": "A simple wrapper for the snpEff utility script vcfEffOnePerLine.pl, which transforms a SnpEff-annotated input VCF, yielding a file with one effect per line.",
+        "version": "4.3k",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "9",
+        "name": "#SnpSift_extractFields_4_3k",
+        "description": "**SnpSift extractFields** tool extracts fields from a VCF file to a TXT, tab separated format [1].\n\n### Common Use Cases\n\nExtracting a subset of VCF fields of interest for further analysis from a SnpEff/SnpSift annotated VCF file.\n\n### Changes Introduced by Seven Bridges\n\nNo significant changes were introduced.\n\n### Common Issues and Important Notes\n\n* Inputs **Input VCF** and **VCF fields to extract** are required.\n\n* Please note that fields to be extracted should be provided in a specific format, for example ANN[*].HGVS_P (see [here](http://snpeff.sourceforge.net/SnpSift.html#Extract) for details).\n\n### Performance Benchmarking\n\nTypical runs take <5 minutes and cost <$0.05.\n\n### References\n\n[1] [SnpSift extractFields documentation](http://snpeff.sourceforge.net/SnpSift.html#Extract)",
+        "version": "4.3k",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "10",
+        "name": "#SBG_FlattenLists",
+        "description": "###**Overview** \n\nSBG FlattenLists is used to merge any combination of single file and list of file inputs into a single list of files. This is important because most tools and the CWL specification doesn't allow array of array types, and combinations of single file and array need to be converted into a single list for tools that can process a list of files.\n\n###**Input** \n\nAny combination of input nodes that are of types File or array of File, and any tool outputs that produce types File or array of File.\n\n###**Output** \n\nSingle array of File list containing all Files from all inputs combined, provided there are no duplicate files in those lists.\n\n###**Usage example** \n\nExample of usage is combining the outputs of two tools, one which produces a single file, and the other that produces an array of files, so that the next tool, which takes in an array of files, can process them together.",
+        "version": "1.0",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "11",
+        "name": "#FastQC",
+        "description": "FastQC reads a set of sequence files and produces a quality control (QC) report from each one. These reports consist of a number of different modules, each of which will help identify a different type of potential problem in your data. \n\nSince it's necessary to convert the tool report in order to show them on Seven Bridges platform, it's recommended to use [FastQC Analysis workflow instead](https://igor.sbgenomics.com/public/apps#admin/sbg-public-data/fastqc-analysis/). \n\nFastQC is a tool which takes a FASTQ file and runs a series of tests on it to generate a comprehensive QC report.  This report will tell you if there is anything unusual about your sequence.  Each test is flagged as a pass, warning, or fail depending on how far it departs from what you would expect from a normal large dataset with no significant biases.  It is important to stress that warnings or even failures do not necessarily mean that there is a problem with your data, only that it is unusual.  It is possible that the biological nature of your sample means that you would expect this particular bias in your results.",
+        "version": "0.11.4",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "12",
+        "name": "#FastQC_1",
+        "description": "FastQC reads a set of sequence files and produces a quality control (QC) report from each one. These reports consist of a number of different modules, each of which will help identify a different type of potential problem in your data. \n\nSince it's necessary to convert the tool report in order to show them on Seven Bridges platform, it's recommended to use [FastQC Analysis workflow instead](https://igor.sbgenomics.com/public/apps#admin/sbg-public-data/fastqc-analysis/). \n\nFastQC is a tool which takes a FASTQ file and runs a series of tests on it to generate a comprehensive QC report.  This report will tell you if there is anything unusual about your sequence.  Each test is flagged as a pass, warning, or fail depending on how far it departs from what you would expect from a normal large dataset with no significant biases.  It is important to stress that warnings or even failures do not necessarily mean that there is a problem with your data, only that it is unusual.  It is possible that the biological nature of your sample means that you would expect this particular bias in your results.",
+        "version": "0.11.4",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "13",
+        "name": "#mantis",
+        "description": "NA",
+        "version": "NA",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "14",
+        "name": "#cnv_adjustedversion",
+        "description": "## PDX Whole Exome Copy Number Variant Tumor-Normal Workflow:\n\nThis Whole Exome Sequencing (WES) Tumor-Normal workflow identifies copy number variants from a human exome experiment by primarily using the [Broad Institute's](https://software.broadinstitute.org/gatk/best-practices/) best-practices workflow for alignment and the [Sequenza R package](http://www.cbs.dtu.dk/biotools/sequenza/) to estimate genome wide copy number. \n\n###Essential Requirements\n\n  The following metadata fields are required and should be assigned to input read files:\n\n1. **Sample ID**: Any string. The workflow will run even if strings are the same, however, please consider using different identifiers.\n2. **Paired-end**: 1 or 2\n3. **Sample type**: Any string. Please make sure to also provide the chosen tumor and normal sample types to the SBG Split Pair by Metadata tool (see below for details), if this is the field you wish to use to separate tumor and normal files.\n\nThe workflow will process both uncompressed and compressed FASTQ files.\n\n####The following output files will be generated:\n\n\n       Tumor BAM file\n       Tumor QC reports - integrated and exome\n\n       Normal BAM file\n       Normal QC reports - integrated and exome\n       \n       Sequenza R data\n\n       Sequenza PDF reports\n\t\t-A plot of all the chromosomes in one image (genome_view),\n       -Multiple plots with one chromosome per image, representing copy-number, B-allele frequency and mutation in parallel (chromosome_view).\n       -Copy number bar plot (CN_bars)\n       -Model fitting plots (CP_contours, model_fit, alternative_fit)\n       \n       Sequenza text report \n       -mutation candidate list with variant allele frequency \n       -segments list with resulting copy numbers and major and minor alleles\n       -Results of the model fitting\n\n       Ensemble annotation of CNV segments\n       \nSee [Sequenza documentation](http://www.cbs.dtu.dk/biotools/sequenza/) for additional information on Sequenza outputs. \n\n\n###Reference Files and Workflow Details\n\nRequired reference input files:\n\n1. Reference FASTA file and secondary files (.FAI, .DICT).  \nDefault file input: Homo\\_sapiens\\_assembly38.fasta (Homo\\_sapiens\\_assembly38.fasta.fai, Homo\\_sapiens\\_assembly38.dict)  \nChromosome naming in the default input file: chr1, chr2... chrX, chrY, chrM.\n\n2. BWA indices were prepared using bwakit/0.7.15. GRCh38 files from the Broad GATK resource bundle (hg38_201601) were used.  \nDefault file input: bwa7\\_idx\\_pfx.tar.gz\n\n3. Additional reference input files (hg38-specific) from the Broad Institute GATK resource bundle (known indels):               \n    Homo\\_sapiens\\_assembly38.known\\_indels.vcf.gz (Homo\\_sapiens\\_assembly38.known\\_indels.vcf.gz.tbi)       \n     Mills\\_and\\_1000G\\_gold_standard.indels.hg38.vcf.gz (Mills\\_and\\_1000G\\_gold\\_standard.indels.hg38.vcf.gz.tbi)  \n     hsa\\_dbSNP\\_v151\\_20170710chr\\_renamed.vcf.gz (hsa\\_dbSNP\\_v151\\_20170710chr\\_renamed.vcf.gz.tbi)\n     \n4. Ensemble93 annotation database:  \nDefault file input: ensembl93\\_transcript\\_081618.txt\n\n5. GC content of reference:  \nDefault file input: Homo\\_sapiens\\_assembly38.gc50Base.txt.gz\n\n6. Target region files (BED and INTERVALS\\_LIST format)\nThe BED file should correspond to the data being processed. Chromosome naming in the BED file should match the reference FASTA used to process the data (if using the default input FASTA file, please ensure that chromosome names begin with 'chr'). If a corresponding INTERVALS\\_LIST file (as used by Picard toolkit) is not available, it can easily be generated using the **GATK BedToIntervalList** tool.\n\n###Workflow steps \n\n#### Step 1: SBG Split Pair by Metadata\nThe first step separates tumor and normal FASTQ files for downstream processing, based on specified metadata criteria which should be supplied as inputs (normal_metadata and tumor_metadata) in the format metadata_key:value. For example, for files to be classified based on Sample type metadata (sample_type field), with the values \"tumor\" and \"normal\", the inputs should read: sample_type:normal and sample_type:tumor (for normal_metadata and tumor_metadata parameters, respectively).\n\n#### Step 2: Tumor/Normal Alignment and Target Coverage\nIn the next step, tumor and normal FASTQ files are trimmed (**JAX python script** and **Cutadapt**), aligned (**BWA, alt-aware**), sorted (**Picard SortSam**) and prepared for CNV analysis (**Picard MarkDuplicates, GATK BaseRecalibrator, GATK ApplyBQSR**). QC is also performed on the processed BAM files using Exome Coverage QC 1.0 tool and Picard CalculateHsMetrics. QC reports are aggregated with the QC Integrate script.\n\n**NOTE:**\nBy default, QC checks require that at least 75 % of every target region be covered at 20X. If this requirement is not met, the task will fail (See Coverage Threshold parameter of the **PERL - QC integrate Tumor/Normal** tools to adjust this).\n\n####Step 3: Pileup of Tumor and Normal BAM files \nGATK PrintReads is used with a target BED file to extract regions for pileup. **Samtools mpileup** is then used. \n\n####Step 4: CNV analysis (**Sequenza**)\nPileups are compressed and passed to the Sequenza-Utils script, which prepares inputs for the Sequenza R package, which is subsequently run. \n\n####Step 5: Annotation (**perl script**)\nAnnotation of segments identified by sequenza is done using an ensemble database.",
+        "version": "JAX version matched",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "15",
+        "name": "#tmb_1",
+        "description": "NA",
+        "version": "NA",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "16",
+        "name": "#normal_alignment_and_target_coverage_workflow",
+        "description": "NA",
+        "version": "NA",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "17",
+        "name": "#snpsift_split_4_3k",
+        "description": "**SnpSift split** tool splits VCF files by chromosome (default) or specified number of lines [1].\n\n### Common Use Cases\nSplitting a VCF file for post-processing in parallel.\n\n### Changes Introduced by Seven Bridges\n\nNo significant changes were introduced.\n\n### Common Issues and Important Notes\n\n* Input **Input VCF files to split or join** is required.\n\n### Performance Benchmarking\n\nTypical runs take <5 minutes and cost <$0.05.\n\n### References\n\n[1] [SnpSift split documentation](http://snpeff.sourceforge.net/SnpSift.html#Split)",
+        "version": "4.3k",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "18",
+        "name": "#tumor_alignment_and_target_coverage_workflow",
+        "description": "NA",
+        "version": "NA",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "19",
+        "name": "#multiqc_1",
+        "description": "**MultiQC** aggregates results from bioinformatics analyses across many samples into a single report [1]. \n\n__MultiQC__ searches a given directory for analysis logs and compiles an HTML report. It's a general purpose tool, perfect for aggregating and summarizing the output from numerous bioinformatics tools [1].\n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the end of the page.*\n\n### Common Use Cases\n\n- To successfully run __MultiQC__, just supply it with outputs from one of the many currently supported modules. The list of all supported tools and how to properly forward their outputs into __MultiQC__ can be found via the following [link](http://multiqc.info/docs/#multiqc-modules). As an output, a collective report with all of the analyses you provided in the input will be generated in an interactive HTML format as shown in [1]. \n\n### Changes Introduced by Seven Bridges\n\n* Taking into consideration that the platform currently is unable to directly display non-native and interactive HTML pages, instead of downloading the __MultiQC__ report and viewing it in your browser locally, you can either use the __SBG Html2b64__ app from the Public Apps Gallery to turn your 'simple' template report into a platform friendly HTML document and view it on the platform, or you can simply resort to the PDF file (use *View as PDF* option under **...** to open it on the platform), which is by default always produced in addition to the HTML report (under default **MultiQC** parameters).\n\n### Common Issues and Important Notes\n\n- All output files will be prefixed by the input **Sample ID** metadata field (if it exists, otherwise the prefix will be taken from the file name). If there are multiple samples, the prefix will be the first input filename.\n\n### Performance Benchmarking\n\n__MultiQC__ is a tool that reports metrics, and as such does not require a lot of resources. Almost all **MultiQC** tasks will finish within 5 minutes when running on the default instance, costing around $0.05 using on-demand instances. \n\n*Cost can be significantly reduced by **spot instance** usage. Visit [knowledge center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*\n\n### References\n\n[1] [MultiQC homepage](http://multiqc.info/)",
+        "version": "1.3",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "20",
+        "name": "#multiqc_2",
+        "description": "**MultiQC** aggregates results from bioinformatics analyses across many samples into a single report [1]. \n\n__MultiQC__ searches a given directory for analysis logs and compiles an HTML report. It's a general purpose tool, perfect for aggregating and summarizing the output from numerous bioinformatics tools [1].\n\n*A list of **all inputs and parameters** with corresponding descriptions can be found at the end of the page.*\n\n### Common Use Cases\n\n- To successfully run __MultiQC__, just supply it with outputs from one of the many currently supported modules. The list of all supported tools and how to properly forward their outputs into __MultiQC__ can be found via the following [link](http://multiqc.info/docs/#multiqc-modules). As an output, a collective report with all of the analyses you provided in the input will be generated in an interactive HTML format as shown in [1]. \n\n### Changes Introduced by Seven Bridges\n\n* Taking into consideration that the platform currently is unable to directly display non-native and interactive HTML pages, instead of downloading the __MultiQC__ report and viewing it in your browser locally, you can either use the __SBG Html2b64__ app from the Public Apps Gallery to turn your 'simple' template report into a platform friendly HTML document and view it on the platform, or you can simply resort to the PDF file (use *View as PDF* option under **...** to open it on the platform), which is by default always produced in addition to the HTML report (under default **MultiQC** parameters).\n\n### Common Issues and Important Notes\n\n- All output files will be prefixed by the input **Sample ID** metadata field (if it exists, otherwise the prefix will be taken from the file name). If there are multiple samples, the prefix will be the first input filename.\n\n### Performance Benchmarking\n\n__MultiQC__ is a tool that reports metrics, and as such does not require a lot of resources. Almost all **MultiQC** tasks will finish within 5 minutes when running on the default instance, costing around $0.05 using on-demand instances. \n\n*Cost can be significantly reduced by **spot instance** usage. Visit [knowledge center](https://docs.sevenbridges.com/docs/about-spot-instances) for more details.*\n\n### References\n\n[1] [MultiQC homepage](http://multiqc.info/)",
+        "version": "1.3",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "21",
+        "name": "#gatk_mutect2_4130",
+        "description": "###**Overview**  \n\nCall somatic SNVs and indels via local assembly of haplotypes.\n\n###**Inputs**  \n\nA BAM file containing normal data.\n\nA BAM file containing tumor data.\n\nThe name of the normal sample.\n\nThe name of the tumor sample.\n\n###**Output**  \n\nA VCF file with called variants.\n\n###**Usage example**  \n\n    java -jar gatk.jar \\  \n         Mutect2 \\  \n         --reference reference.fasta \\  \n         --input normal.bam \\   \n         --input tumor.bam \\ \n         --normalSampleName normal \\\n         --tumorSampleName tumor \\\n         --output variant.vcf\n\n###**IMPORTANT NOTICE**  \n\nTools in GATK that require a fasta reference file also look for the reference file's corresponding *.fai* (fasta index) and *.dict* (fasta dictionary) files. The fasta index file allows random access to reference bases and the dictionary file is a dictionary of the contig names and sizes contained within the fasta reference. These two secondary files are essential for GATK to work properly. To append these two files to your fasta reference please use the '***SBG FASTA Indices***' tool within your GATK based workflow before using any of the GATK tools.",
+        "version": "4.0.5.1",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "22",
+        "name": "#gatk_filtermutectcalls_4130",
+        "description": "###**Overview**  \n\nFilters somatic SNVs and indels called by Mutect2. \n\n###**Inputs**  \n\nA VCF file containing variants called by Mutect2.\n\n###**Output**  \n\nA VCF file containing filtered variants.\n\n###**Usage example**  \n\n    java -jar gatk.jar \\  \n         FilterMutectCalls \\  \n         --reference reference.fasta \\  \n         --variant variant.vcf \\   \n         --output output.vcf\n\n###**IMPORTANT NOTICE**  \n\nTools in GATK that require a fasta reference file also look for the reference file's corresponding *.fai* (fasta index) and *.dict* (fasta dictionary) files. The fasta index file allows random access to reference bases and the dictionary file is a dictionary of the contig names and sizes contained within the fasta reference. These two secondary files are essential for GATK to work properly. To append these two files to your fasta reference please use the '***SBG FASTA Indices***' tool within your GATK based workflow before using any of the GATK tools.",
+        "version": "4.1.3.0",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "23",
+        "name": "#vcftools_sort_0_1_14",
+        "description": "VCFtools sort sorts a VCF file.",
+        "version": "0.1.14",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      },
+      {
+        "step_number": "24",
+        "name": "#gatk_variantannotator",
+        "description": "###**Overview**  \n\nTool for adding annotations to VCF files.\n\n###**Inputs**  \n\nA variant set to annotate and optionally one or more BAM files.\n\n###**Output**  \n\nAn annotated VCF.\n\n###**Usage example**  \n\n    java -jar gatk.jar \\  \n         VariantAnnotator \\ \n         --variant variant.vcf \\\n         --input input.bam \\\n         --reference reference.fasta \\\n         --dbsnp dbsnp.vcf",
+        "version": "4.1.4.0",
+        "prerequisite": [],
+        "input_list": [],
+        "output_list": []
+      }
+    ]
+  },
+  "execution_domain": {
+    "script": "https://cgc-api.sbgenomics.com/v2/apps/pdxnet/pdxnet-datapool/pdx-wxs-tumor-normal-updatedgatk/8/raw/",
+    "script_driver": "Seven Bridges Common Workflow Language Executor",
+    "software_prerequisites": [
+      {
+        "name": "Cancer Genomics Platform",
+        "version": "2020-02-05",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/",
+            "access_time": "2020-02-05",
+            "sha1_chksum": ""
+          }
+        ]
+      }
+    ],
+    "external_data_endpoints": [],
+    "environment_variables": []
+  },
+  "parametric_domain": [
+    {
+      "param": "Split Mode",
+      "value": "File per chr with alt contig in a single file",
+      "step": "SBG prepare intervals"
+    }
+  ],
+  "io_domain": {
+    "input_subdomain": [
+      {
+        "uri": [
+          {
+            "filename": "MD_Anderson_NimbleGeneV3_WES_hg19_liftoverhg38_3_column.bed",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d88d1b3e4b06d0cb48dfbb3",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Sorted_Cosmicv80_Coding_Noncoding.processed.vcf.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d7",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Sorted_Cosmicv80_Coding_Noncoding.processed.vcf.gz.tbi",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d5",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "dbNSFP3.5a_variant.chr_all_sorted.txt.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240db",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "dbNSFP3.5a_variant.chr_all_sorted.txt.gz.tbi",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e0",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "IPCT-FC107-MS11-Cap809-7-ID06.R2.fastq.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8042a8e4b065d300b60942",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "IPCT-FC107-MS11-Cap809-7-ID06.R1.fastq.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8042a8e4b065d300b60c30",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "IPCT106-MOON0011-PM289-Cap802-3-ID12.R1.fastq.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8042a8e4b065d300b60998",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "IPCT106-MOON0011-PM289-Cap802-3-ID12.R2.fastq.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8042a8e4b065d300b609b6",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "BWA_ref_files.tar.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e2",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "MD_Anderson_NimbleGeneV3_WES_hg19_liftoverhg38_picard.intervals",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d88d1b3e4b06d0cb48dfbb4",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Homo_sapiens_assembly38.fasta",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d9",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Homo_sapiens_assembly38.fasta.fai",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e3",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Homo_sapiens_assembly38.dict",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e4",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "snpEff_v4_3_hg38.zip",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240de",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "ensembl93_transcript_081618.txt",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f60e4b065d300bb20c6",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Homo_sapiens_assembly38.gc50Base.txt.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d88f336e4b06d0cb49019e3",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Homo_sapiens_assembly38.known_indels.vcf.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240da",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Homo_sapiens_assembly38.known_indels.vcf.gz.tbi",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e6",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Mills_and_1000G_gold_standard.indels.hg38.vcf.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d6",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240dc",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "hsa_dbSNP_v151_20170710chr_renamed.vcf.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e5",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "hsa_dbSNP_v151_20170710chr_renamed.vcf.gz.tbi",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240df",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "MANTIS_msat_loci_hg38.bed",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f87e4b065d300bb2101",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "Xenome_WGS_indices.tar.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240dd",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "ExAC.0.3.GRCh38_chr_added_bad_lift_over_removed_reorder_primary_only.vcf.gz",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240d8",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      },
+      {
+        "uri": [
+          {
+            "filename": "ExAC.0.3.GRCh38_chr_added_bad_lift_over_removed_reorder_primary_only.vcf.gz.tbi",
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d838f00e4b06d0cb48240e1",
+            "access_time": "2019-09-24T16:44:05Z"
+          }
+        ]
+      }
+    ],
+    "output_subdomain": [
+      {
+        "mediatype": "summary",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b221be4b065d300ccdaa5",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "html",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b221de4b065d300ccdab7",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "tab",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b222be4b065d300ccdac2",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "html",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b221be4b065d300ccdaac",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "pdf",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e35",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "pdf",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e1d",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "pdf",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e3d",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "pdf",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e23",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "pdf",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e31",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "pdf",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e3f",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "summary",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b221be4b065d300ccdab0",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "html",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8a63fae4b06d0cb4992dbd",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "html",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8a63fae4b06d0cb4992dbb",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "RData",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e41",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "html",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8a6538e4b06d0cb499304a",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "html",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8a6538e4b06d0cb4993048",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e39",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b221be4b065d300ccdab2",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "bam",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8ae937e4b06d0cb499f8c6",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "bai",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8ae937e4b06d0cb499f8ca",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e3b",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "bam",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8aef08e4b06d0cb499f9c7",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "bai",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8aeb0be4b06d0cb499f8d1",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8aeb0be4b06d0cb499f8d5",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e1f",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "vcf",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e21",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b006be4b065d300cccbe7",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b221be4b065d300ccdaa7",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e2b",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e37",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e2e",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e33",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e25",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e27",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "RData",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e29",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e45",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b23bfe4b06d0cb49a22ba",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "txt",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e43",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      },
+      {
+        "mediatype": "NA",
+        "uri": [
+          {
+            "uri": "https://cgc.sbgenomics.com/u/pdxnet/pdxnet-datapool/files/5d8b52f9e4b065d300cd1e2d",
+            "access_time": "2019-09-25T11:43:54Z"
+          }
+        ]
+      }
+    ]
+  },
+  "error_domain": {
+    "empirical_error": [],
+    "algorithmic_error": []
+  }
+}
